@@ -10,22 +10,76 @@ var rightPressed = false;
 var leftPressed = false;
 var isPaused = false;
 
-var ball = {
-    radius: 5,
-    color: '#177E89',
-    draw: function () {
-        ctx.beginPath();
-        ctx.arc(x, y, ball.radius, 0, Math.PI * 2);
-        ctx.fillStyle = ball.color;
-        ctx.fill();
-        ctx.closePath();
+var brick = {
+    rowCount: 3,
+    columnCount: 5,
+    padding: CANVAS.width * 0.01
+}
+brick.paddingUnitNumber = brick.columnCount + 1;
+brick.width = (CANVAS.width - (brick.paddingUnitNumber * brick.padding)) / brick.columnCount;
+brick.height = brick.width / 10;
+
+var bricks = [];
+for (c = 0; c < brick.columnCount; c++) {
+    bricks[c] = [];
+    for (r = 0; r < brick.rowCount; r++) {
+        bricks[c][r] = {x: 0, y: 0};
     }
 }
+
+function drawBricks(){
+    console.log(brick.padding);
+    for (c = 0; c < brick.columnCount; c++) {
+        for (r = 0; r < brick.rowCount; r++){
+            let brickX = ((c + 1) * brick.padding) + (brick.width * (c));
+            let brickY = ((r + 1) * brick.padding) + (brick.height * (r));
+            bricks[c][r].x = brickX;
+            bricks[c][r].y = brickY;
+            ctx.beginPath();
+            ctx.rect(brickX, brickY, brick.width, brick.height);
+            ctx.fillStyle = '#2D7DBC';
+            ctx.fill();
+            ctx.closePath();
+        }
+    }
+}
+
+
+var ball = {
+    radius: 5,
+    color: '#2D7DBC',
+}
+ball.draw = function (){
+    ctx.beginPath();
+    ctx.arc(x, y, ball.radius, 0, Math.PI * 2);
+    ctx.fillStyle = ball.color;
+    ctx.fill();
+    ctx.closePath();
+    if ( x + dx < ball.radius || x + dx > CANVAS.width - ball.radius){
+        dx = -dx;
+        ball.color = newColor();
+    }
+    if ( y + dy < ball.radius){
+        dy = -dy;
+        ball.color = newColor();
+    }
+    if (y + dy > CANVAS.height - (paddle.height + ball.radius)){
+        if ( x + ball.radius > paddle.xPos && x + ball.radius < paddle.xPos + paddle.width ){
+            dy = -dy;
+            ball.color = newColor();
+        }
+        if (y + dy > CANVAS.height - (ball.radius / 2)){
+            alert("GAME OVER");
+            document.location.reload();
+        }
+    }
+}
+
 
 var paddle = {
     height: 10,
     width: 75,
-    color: '#EF7030'
+    color: '#2D7DBC'
 };
 paddle.xPos = (CANVAS.width - paddle.width) / 2;
 paddle.draw = function(){
@@ -34,6 +88,11 @@ paddle.draw = function(){
     ctx.fillStyle = paddle.color;
     ctx.fill();
     ctx.closePath();
+    if(rightPressed && paddle.xPos < CANVAS.width - paddle.width){
+        paddle.xPos += 7;
+    }else if(leftPressed && paddle.xPos > 0){
+        paddle.xPos -= 7;
+    }
 }
 
 function newColor(){
@@ -44,34 +103,9 @@ function newColor(){
 function draw() {
     if (isPaused === false){
         ctx.clearRect(0, 0, CANVAS.width, CANVAS.height); // clear the entire canvas before drawing
-        paddle.draw();
+        drawBricks();
         ball.draw();
-        
-        if ( x + dx < ball.radius || x + dx > CANVAS.width - ball.radius){
-            dx = -dx;
-            ball.color = newColor();
-        }
-        if ( y + dy < ball.radius){
-            dy = -dy;
-            ball.color = newColor();
-        }
-
-        if (y + dy > CANVAS.height - (paddle.height + ball.radius)){
-            if ( x + ball.radius > paddle.xPos && x + ball.radius < paddle.xPos + paddle.width ){
-                dy = -dy;
-                ball.color = newColor();
-            }
-            if (y + dy > CANVAS.height - (ball.radius / 2)){
-                alert("GAME OVER");
-                document.location.reload();
-            }
-        }
-
-        if(rightPressed && paddle.xPos < CANVAS.width - paddle.width){
-            paddle.xPos += 7;
-        }else if(leftPressed && paddle.xPos > 0){
-            paddle.xPos -= 7;
-        }
+        paddle.draw();
 
         x += dx;
         y += dy;
