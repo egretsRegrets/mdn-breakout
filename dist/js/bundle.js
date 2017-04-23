@@ -8,6 +8,7 @@ var dx = 1.5; // x offset at each new frame
 var dy = -1.5; // y offset at each new frame
 var rightPressed = false;
 var leftPressed = false;
+var isPaused = false;
 
 var ball = {
     radius: 5,
@@ -41,38 +42,40 @@ function newColor(){
 }
 
 function draw() {
-    ctx.clearRect(0, 0, CANVAS.width, CANVAS.height); // clear the entire canvas before drawing
-    paddle.draw();
-    ball.draw();
-    
-    if ( x + dx < ball.radius || x + dx > CANVAS.width - ball.radius){
-        dx = -dx;
-        ball.color = newColor();
-    }
-    if ( y + dy < ball.radius){
-        dy = -dy;
-        ball.color = newColor();
-    }
-    if (y + dy > CANVAS.height - (paddle.height + ball.radius)){
-        if ( x + ball.radius > paddle.xPos && x + ball.radius < paddle.xPos + paddle.width ){
+    if (isPaused === false){
+        ctx.clearRect(0, 0, CANVAS.width, CANVAS.height); // clear the entire canvas before drawing
+        paddle.draw();
+        ball.draw();
+        
+        if ( x + dx < ball.radius || x + dx > CANVAS.width - ball.radius){
+            dx = -dx;
+            ball.color = newColor();
+        }
+        if ( y + dy < ball.radius){
             dy = -dy;
             ball.color = newColor();
         }
-    }
 
-    if (y + dy > CANVAS.height){
-        alert("GAME OVER");
-        document.location.reload();
-    }
+        if (y + dy > CANVAS.height - (paddle.height + ball.radius)){
+            if ( x + ball.radius > paddle.xPos && x + ball.radius < paddle.xPos + paddle.width ){
+                dy = -dy;
+                ball.color = newColor();
+            }
+            if (y + dy > CANVAS.height - (ball.radius / 2)){
+                alert("GAME OVER");
+                document.location.reload();
+            }
+        }
 
-    if(rightPressed && paddle.xPos < CANVAS.width - paddle.width){
-        paddle.xPos += 7;
-    }else if(leftPressed && paddle.xPos > 0){
-        paddle.xPos -= 7;
-    }
+        if(rightPressed && paddle.xPos < CANVAS.width - paddle.width){
+            paddle.xPos += 7;
+        }else if(leftPressed && paddle.xPos > 0){
+            paddle.xPos -= 7;
+        }
 
-    x += dx;
-    y += dy;
+        x += dx;
+        y += dy;
+    }
 }
 
 document.addEventListener('keydown', keyDownHandler, false);
@@ -85,6 +88,13 @@ function keyDownHandler(event) {
     else if (event.keyCode === 39 || event.keyCode === 68){
         rightPressed = true;
     }
+    else if (event.keyCode === 27){
+        if (isPaused === false){
+            isPaused = true;
+        }else {
+            isPaused = false;
+        }
+    }
 }
 
 function keyUpHandler(event) {
@@ -96,7 +106,9 @@ function keyUpHandler(event) {
     }
 }
 
-setInterval(draw, 10); // draw every 10miliseconds
+setInterval(draw, 10);
+
+ // draw every 10miliseconds
 },{}]},{},[1])
 
 //# sourceMappingURL=bundle.js.map
