@@ -23,22 +23,24 @@ var bricks = [];
 for (c = 0; c < brick.columnCount; c++) {
     bricks[c] = [];
     for (r = 0; r < brick.rowCount; r++) {
-        bricks[c][r] = {x: 0, y: 0};
+        bricks[c][r] = {x: 0, y: 0, status: 1};
     }
 }
 
 function drawBricks(){
     for (c = 0; c < brick.columnCount; c++) {
         for (r = 0; r < brick.rowCount; r++){
-            let brickX = ((c + 1) * brick.padding) + (brick.width * (c));
-            let brickY = ((r + 1) * brick.padding) + (brick.height * (r));
-            bricks[c][r].x = brickX;
-            bricks[c][r].y = brickY;
-            ctx.beginPath();
-            ctx.rect(brickX, brickY, brick.width, brick.height);
-            ctx.fillStyle = '#2D7DBC';
-            ctx.fill();
-            ctx.closePath();
+            if (bricks[c][r].status === 1) {
+                let brickX = ((c + 1) * brick.padding) + (brick.width * (c));
+                let brickY = ((r + 1) * brick.padding) + (brick.height * (r));
+                bricks[c][r].x = brickX;
+                bricks[c][r].y = brickY;
+                ctx.beginPath();
+                ctx.rect(brickX, brickY, brick.width, brick.height);
+                ctx.fillStyle = '#2D7DBC';
+                ctx.fill();
+                ctx.closePath();
+            }
         }
     }
 }
@@ -47,11 +49,14 @@ function brickCollision() {
     for (c = 0; c < brick.columnCount; c++){
         for (r = 0; r < brick.rowCount; r++){
             let thisBrick = bricks[c][r];
-            let ballPositionY = getBallPositionY();
-            let ballPositionX = getBallPositionX();
-            if ( ballPositionY < thisBrick.y + brick.height && ballPositionY > thisBrick.y ){
-                if( ballPositionX < thisBrick.x + brick.width && ballPositionX > thisBrick.x){
-                    dy = -dy;
+            if (thisBrick.status === 1){
+                let ballPositionY = getBallPositionY();
+                let ballPositionX = getBallPositionX();
+                if ( ballPositionY < thisBrick.y + brick.height && ballPositionY > thisBrick.y ){
+                    if( ballPositionX < thisBrick.x + brick.width && ballPositionX > thisBrick.x){
+                        dy = -dy;
+                        thisBrick.status = 0;
+                    }
                 }
             }
         }
@@ -69,20 +74,23 @@ ball.draw = function (){
     ctx.fillStyle = ball.color;
     ctx.fill();
     ctx.closePath();
-    if ( x + dx < ball.radius || x + dx > CANVAS.width - ball.radius){
+    if ( x + dx < ball.radius || x + dx > CANVAS.width - ball.radius){ // hits left limit of canvas, hit right limit of canvas
         dx = -dx;
     }
-    if ( y + dy < ball.radius){
+    if ( y + dy < ball.radius){ // hits canvas ceiling
         dy = -dy;
     }
-    if (y + dy > CANVAS.height - (paddle.height + ball.radius)){
-        if ( x + ball.radius > paddle.xPos && x + ball.radius < paddle.xPos + paddle.width ){
+    // hits paddle
+    if (y + dy + ball.radius > CANVAS.height - paddle.height){ 
+        if ( x - ball.radius > paddle.xPos && x + ball.radius < paddle.xPos + paddle.width ){
             dy = -dy;
         }
-        if (y + dy > CANVAS.height - (ball.radius / 2)){
-            alert("GAME OVER");
-            document.location.reload();
-        }
+    }
+    // hits canvas floor
+    if (y + dy > CANVAS.height){
+        isPaused = true;
+        alert("GAME OVER");
+        document.location.reload();
     }
 }
 
