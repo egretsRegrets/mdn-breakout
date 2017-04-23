@@ -49,9 +49,20 @@ function draw() {
         dx = -dx;
         ball.color = newColor();
     }
-    if ( y + dy < ball.radius || y + dy > CANVAS.height - ball.radius){
+    if ( y + dy < ball.radius){
         dy = -dy;
         ball.color = newColor();
+    }
+    if (y + dy > CANVAS.height - (paddle.height + ball.radius)){
+        if ( x + ball.radius > paddle.xPos && x + ball.radius < paddle.xPos + paddle.width ){
+            dy = -dy;
+            ball.color = newColor();
+        }
+    }
+
+    if (y + dy > CANVAS.height){
+        alert("GAME OVER");
+        document.location.reload();
     }
 
     if(rightPressed && paddle.xPos < CANVAS.width - paddle.width){
