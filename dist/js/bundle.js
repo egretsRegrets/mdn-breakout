@@ -4,20 +4,21 @@ const ctx = CANVAS.getContext('2d');
 
 var x = CANVAS.width / 2;
 var y = CANVAS.height - 30;
-var dx = 1.5; // x offset at each new frame
-var dy = -1.5; // y offset at each new frame
+var dx = .75; // x offset at each new frame
+var dy = -.75; // y offset at each new frame
 var rightPressed = false;
 var leftPressed = false;
 var isPaused = false;
+var score = 0;
 
 var brick = {
-    rowCount: 3,
+    rowCount: 4,
     columnCount: 7,
     padding: CANVAS.width * 0.01
 }
 brick.paddingUnitNumber = brick.columnCount + 1;
 brick.width = (CANVAS.width - (brick.paddingUnitNumber * brick.padding)) / brick.columnCount;
-brick.height = brick.width / 8;
+brick.height = CANVAS.height * 0.03;
 
 var bricks = [];
 for (c = 0; c < brick.columnCount; c++) {
@@ -56,6 +57,12 @@ function brickCollision() {
                     if( ballPositionX < thisBrick.x + brick.width && ballPositionX > thisBrick.x){
                         dy = -dy;
                         thisBrick.status = 0;
+                        score += 1;
+                        if (score === brick.columnCount * brick.rowCount){
+                            isPaused = true;
+                            alert("win!");
+                            document.location.reload();
+                        }
                     }
                 }
             }
@@ -65,8 +72,8 @@ function brickCollision() {
 
 
 var ball = {
-    radius: 5,
-    color: '#2D7DBC',
+    radius: 4,
+    color: '#7ACFD6'
 }
 ball.draw = function (){
     ctx.beginPath();
@@ -81,9 +88,17 @@ ball.draw = function (){
         dy = -dy;
     }
     // hits paddle
-    if (y + dy + ball.radius > CANVAS.height - paddle.height){ 
-        if ( x - ball.radius > paddle.xPos && x + ball.radius < paddle.xPos + paddle.width ){
+    if ( x + dx - ball.radius > paddle.xPos && x + dx + ball.radius < paddle.xPos + paddle.width ) { 
+        if (y + dy + ball.radius >= CANVAS.height - paddle.height && y + dy < CANVAS.height) {
             dy = -dy;
+            if (dy > -3){ // speed up ball up to 3px diff per frame
+                dy -= 0.05;
+                if(dx > 0){
+                    dx += 0.05;
+                }else if (dx < 0){
+                    dx -= 0.05;
+                }
+            }
         }
     }
     // hits canvas floor
@@ -92,26 +107,6 @@ ball.draw = function (){
         alert("GAME OVER");
         document.location.reload();
     }
-}
-
-function getBallPositionY() {
-    let ballPositionY;
-    if (dy < 0){
-        ballPositionY = y + dy - ball.radius;
-    } else if (dy > 0){
-        ballPositionY = y + dy + ball.radius;
-    }
-    return ballPositionY;
-}
-
-function getBallPositionX() {
-    let ballPositionX;
-    if (dx < 0){
-        ballPositionX = x + dx - ball.radius;
-    } else if (dx > 0){
-        ballPositionX = x + dx + ball.radius;
-    }
-    return ballPositionX;
 }
 
 var paddle = {
@@ -136,10 +131,11 @@ paddle.draw = function(){
 function draw() {
     if (isPaused === false){
         ctx.clearRect(0, 0, CANVAS.width, CANVAS.height); // clear the entire canvas before drawing
-        drawBricks();
-        ball.draw();
+        drawBricks();        
         paddle.draw();
+        ball.draw();
         brickCollision();
+        drawScore();
 
         x += dx;
         y += dy;
@@ -148,6 +144,33 @@ function draw() {
 
 document.addEventListener('keydown', keyDownHandler, false);
 document.addEventListener('keyup', keyUpHandler, false);
+document.getElementsByClassName('mouse-toggle')[0].addEventListener('click', enableMouseControl, false);
+
+function drawScore(){
+    ctx.font = '12px Arial';
+    ctx.fillStyle = '#F45B69';
+    ctx.fillText(`Score: ${score}`, 8, CANVAS.height - 40);
+}
+
+function getBallPositionY() {
+    let ballPositionY;
+    if (dy < 0){
+        ballPositionY = y + dy - ball.radius;
+    } else if (dy > 0){
+        ballPositionY = y + dy + ball.radius;
+    }
+    return ballPositionY;
+}
+
+function getBallPositionX() {
+    let ballPositionX;
+    if (dx < 0){
+        ballPositionX = x + dx - ball.radius;
+    } else if (dx > 0){
+        ballPositionX = x + dx + ball.radius;
+    }
+    return ballPositionX;
+}
 
 function keyDownHandler(event) {
     if (event.keyCode === 37 || event.keyCode === 65){
@@ -171,6 +194,26 @@ function keyUpHandler(event) {
     }
     else if (event.keyCode === 39 || event.keyCode === 68){
         rightPressed = false;
+    }
+}
+
+function mouseMoveHandler (event) {
+    let relativeX = event.clientX - CANVAS.offsetLeft;
+    if (relativeX - paddle.width / 2 > 0 && relativeX + paddle.width / 2 < CANVAS.width){
+        paddle.xPos = relativeX - paddle.width / 2;
+    }
+}
+
+function enableMouseControl (){
+    let btn = document.getElementsByClassName('mouse-toggle')[0];
+    let btnClasses = btn.classList;
+    console.log(btnClasses);
+    if(!btnClasses.contains('on')){
+        btnClasses.add('on');
+        document.addEventListener('mousemove', mouseMoveHandler, false);
+    }else{
+        btnClasses.remove('on');
+        document.removeEventListener('mousemove', mouseMoveHandler, false);
     }
 }
 

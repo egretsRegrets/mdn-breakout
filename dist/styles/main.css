@@ -16,3 +16,12 @@ h1 {
 
 p {
   color: blue; }
+
+.btn-row {
+  width: 480px;
+  margin: auto;
+  padding: 5px 0;
+  box-sizing: border-box; }
+
+button.mouse-toggle.on {
+  border: 1px solid blue; }
