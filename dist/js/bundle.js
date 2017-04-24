@@ -4,8 +4,8 @@ const ctx = CANVAS.getContext('2d');
 
 var x = CANVAS.width / 2;
 var y = CANVAS.height - 30;
-var dx = .75; // x offset at each new frame
-var dy = -.75; // y offset at each new frame
+var dx = 1.5; // x offset at each new frame
+var dy = -1.5; // y offset at each new frame
 var rightPressed = false;
 var leftPressed = false;
 var isPaused = false;
@@ -91,12 +91,12 @@ ball.draw = function (){
     if ( x + dx - ball.radius > paddle.xPos && x + dx + ball.radius < paddle.xPos + paddle.width ) { 
         if (y + dy + ball.radius >= CANVAS.height - paddle.height && y + dy < CANVAS.height) {
             dy = -dy;
-            if (dy > -3){ // speed up ball up to 3px diff per frame
-                dy -= 0.05;
+            if (dy > -2.5){ // speed up ball up to 3px diff per frame
+                dy -= .15;
                 if(dx > 0){
-                    dx += 0.05;
+                    dx += .15;
                 }else if (dx < 0){
-                    dx -= 0.05;
+                    dx -= .15;
                 }
             }
         }
@@ -139,6 +139,10 @@ function draw() {
 
         x += dx;
         y += dy;
+
+        if (isPaused === false){
+            requestAnimationFrame(draw);
+        }
     }
 }
 
@@ -184,6 +188,7 @@ function keyDownHandler(event) {
             isPaused = true;
         }else {
             isPaused = false;
+            draw();
         }
     }
 }
@@ -217,7 +222,7 @@ function enableMouseControl (){
     }
 }
 
-setInterval(draw, 10);
+draw();
 
  // draw every 10miliseconds
 },{}]},{},[1])
