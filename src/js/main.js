@@ -9,6 +9,7 @@ var rightPressed = false;
 var leftPressed = false;
 var isPaused = false;
 var score = 0;
+var lives = 3;
 
 var brick = {
     rowCount: 4,
@@ -102,9 +103,17 @@ ball.draw = function (){
     }
     // hits canvas floor
     if (y + dy > CANVAS.height){
-        isPaused = true;
-        alert("GAME OVER");
-        document.location.reload();
+        if (lives > 0){
+            lives -= 1;
+            x = paddle.xPos + paddle.width / 2;
+            y = CANVAS.height - paddle.height - ball.radius;
+            dx = 1.5;
+            dy = -1.5;
+        }else{
+            isPaused = true;
+            alert("GAME OVER");
+            document.location.reload();
+        }
     }
 }
 
@@ -135,6 +144,7 @@ function draw() {
         ball.draw();
         brickCollision();
         drawScore();
+        drawLives();
 
         x += dx;
         y += dy;
@@ -153,6 +163,11 @@ function drawScore(){
     ctx.font = '12px Arial';
     ctx.fillStyle = '#F45B69';
     ctx.fillText(`Score: ${score}`, 8, CANVAS.height - 40);
+}
+function drawLives(){
+    ctx.font = '12px Arial';
+    ctx.fillStyle = '#F45B69';
+    ctx.fillText(`Lives: ${lives}`, 8, CANVAS.height - 25);
 }
 
 function getBallPositionY() {
@@ -211,7 +226,6 @@ function mouseMoveHandler (event) {
 function enableMouseControl (){
     let btn = document.getElementsByClassName('mouse-toggle')[0];
     let btnClasses = btn.classList;
-    console.log(btnClasses);
     if(!btnClasses.contains('on')){
         btnClasses.add('on');
         document.addEventListener('mousemove', mouseMoveHandler, false);
